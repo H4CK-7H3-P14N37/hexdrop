@@ -17,6 +17,10 @@ Cybercriminal groups routinely publish stolen data as part of their extortion ta
 **Hexdrop** is a tool designed for cybersecurity professionals, researchers, and investigative journalists. It is intended for **legal and ethical use only**. Accessing or distributing leaked data may have legal consequences—proceed responsibly.  
 
 ## Setup
+### clone it 
+```
+git clone --recursive https://github.com/H4CK-7H3-P14N37/hexdrop.git
+```
 ### create a .env file with the following variables
 ```
 DAILY_DEFAULT_EMAIL=
