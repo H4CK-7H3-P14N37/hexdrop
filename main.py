@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import os
+import re
 import datetime
 import requests
 import pandas as pd
+from django.utils.html import escape
 from api_classes.mail_api import MailAPI
 
 # Define global vars
@@ -11,13 +13,29 @@ DEFAULT_EMAIL = os.getenv('DAILY_DEFAULT_EMAIL')
 EMAIL_USERNAME = os.getenv('EMAIL_USERNAME')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
-
 # Make the GET request
 headers = {"Accept": "application/json"}
 response = requests.get(URL, headers=headers)
 
 # Todays date to filter
 today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+# function to escape domain
+def escape_domain(match):
+    # Extract the parts of the URL
+    scheme = match.group('scheme') or ''
+    domain = match.group('domain')
+    rest = match.group('rest') or ''
+    # Update the scheme: change 'http' to 'hxxp'
+    if scheme:
+        scheme = scheme.replace('http', 'hxxp', 1)
+    # Replace periods in the domain with [.] only
+    escaped_domain = domain.replace('.', '[.]')
+    return scheme + escaped_domain + rest
+
+pattern = re.compile(
+    r'(?P<scheme>https?://)?(?P<domain>(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(?P<rest>/[^\s]*)?'
+)
 
 # Check if the request was successful
 if response.status_code == 200:
@@ -39,6 +57,19 @@ if response.status_code == 200:
             
         }
         for item in filtered_data
+    ]
+
+    # Formating descriptions and escaping URLs
+    result = [
+        {
+            "victim": pattern.sub(escape_domain, item.get("victim")),
+            # "discovered": item.get("discovered"),
+            "screenshot": item.get("screenshot"),
+            "description": pattern.sub(escape_domain, item.get("description").replace("\n","<br>")),
+            "claim_url": pattern.sub(escape_domain, item.get("claim_url")),
+            
+        }
+        for item in result
     ]
     
     # Email results
@@ -65,9 +96,11 @@ if response.status_code == 200:
             '<tr style="text-align: left;">'
         )
         html_body_list.append(results_html)
+    email_body = "<br><br>".join(html_body_list)
+    email_subject = f"Daily Hexdrop Summary - {datetime.datetime.now().strftime('%Y-%m-%d')}"
     send_status = mail_obj.send_mail(
-        f"Daily Hexdrop Summary",
-        f"{'<br><br>'.join(html_body_list)}<br>",
+        email_subject,
+        email_body,
         EMAIL_USERNAME,
         [DEFAULT_EMAIL], 
         [],

@@ -21,15 +21,16 @@ RUN mkdir /app/api_classes
 COPY api_classes/mail_api.py /app/api_classes/mail_api.py
 COPY main.py /app/
 COPY cron_run.sh /app/
+COPY entrypoint.sh /app/
 
 # Set timezone to EST
 RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
 
 # Add cron job
-RUN echo "0 9 * * * root /app/cron_run.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/hexdrop
+RUN echo "0 8 * * * root /app/cron_run.sh > /var/log/cron.log 2>&1" > /etc/cron.d/hexdrop
 
 # Set permissions and apply cron job
 RUN chmod 0644 /etc/cron.d/hexdrop && crontab /etc/cron.d/hexdrop
 
 # Start cron in foreground
-ENTRYPOINT ["cron", "-f"]
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
