@@ -2,6 +2,7 @@
 
 # Default: do not use no-cache
 NO_CACHE=false
+DOCKER_IMAGE_NAME="hexdrop"
 
 usage() {
   echo "Usage: $0 [-c] [-h]"
@@ -27,9 +28,9 @@ done
 
 # Run the appropriate docker build command
 if [ "$NO_CACHE" = true ]; then
-  echo "Running: docker build --no-cache -t hexdrop ."
-  docker build --no-cache -t hexdrop .
+  echo "Running: docker build --no-cache -t $DOCKER_IMAGE_NAME ."
+  docker build --no-cache -t $DOCKER_IMAGE_NAME .
 else
-  echo "Running: docker build -t hexdrop ."
-  docker build -t hexdrop .
+  echo "Running: docker build -t $DOCKER_IMAGE_NAME."
+  docker build -t $DOCKER_IMAGE_NAME .
 fi
