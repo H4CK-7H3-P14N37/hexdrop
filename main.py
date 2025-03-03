@@ -18,7 +18,7 @@ headers = {"Accept": "application/json"}
 response = requests.get(URL, headers=headers)
 
 # Todays date to filter
-today = datetime.datetime.now().strftime("%Y-%m-%d")
+today_minus_n = datetime.datetime.now()-datetime.timedelta(days=1)
 
 # function to escape domain
 def escape_domain(match):
@@ -42,9 +42,12 @@ if response.status_code == 200:
     data = response.json()  # Parse JSON response
     
     # Filter data: select only entries where `discovered` starts with today
-    filtered_data = [
-        item for item in data if item.get("discovered", "").startswith(today)
-    ]
+    filtered_data = []
+    for item in data:
+        discovered_date = item.get("discovered", "")
+        if discovered_date:
+            if datetime.datetime.strptime(discovered_date, "%Y-%m-%d %H:%M:%S.%f") >= today_minus_n:
+                filtered_data.append(item)
     
     # Extract only the required fields
     result = [
