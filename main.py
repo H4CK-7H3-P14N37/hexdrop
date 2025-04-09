@@ -4,6 +4,7 @@ import re
 import datetime
 import requests
 import pandas as pd
+from time import sleep
 from django.utils.html import escape
 from api_classes.mail_api import MailAPI
 
@@ -15,7 +16,14 @@ EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 # Make the GET request
 headers = {"Accept": "application/json"}
-response = requests.get(URL, headers=headers)
+
+try:
+    response = requests.get(URL, headers=headers, timeout=30)
+    if not response.ok:
+        sleep(10)
+        response = requests.get(URL, headers=headers, timeout=30)
+except Exception as e:
+    print(e)
 
 # Todays date to filter
 today_minus_n = datetime.datetime.now()-datetime.timedelta(days=1)
