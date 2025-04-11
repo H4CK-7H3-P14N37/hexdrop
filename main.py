@@ -124,7 +124,7 @@ if response.status_code == 200:
         )
         html_body_list.append(results_html)
     email_body = "<br><br>".join(html_body_list)
-    email_subject = f"Daily Hexdrop Summary - {datetime.datetime.now().strftime('%Y-%m-%d')}"
+    email_subject = f"Hexdrop: {datetime.datetime.now().strftime('%Y-%m-%d')}"
     send_status = mail_obj.send_mail(
         email_subject,
         email_body,
