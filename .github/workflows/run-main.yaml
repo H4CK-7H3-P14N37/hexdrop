@@ -8,6 +8,8 @@ on:
 jobs:
   run-daily:
     runs-on: ubuntu-latest
+    env:
+      BCC_LIST: ${{ vars.BCC_LIST }}
 
     steps:
       - name: Checkout repository with submodules
