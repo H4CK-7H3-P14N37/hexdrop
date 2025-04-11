@@ -20,8 +20,13 @@ headers = {"Accept": "application/json"}
 try:
     response = requests.get(URL, headers=headers, timeout=30)
     if not response.ok:
+        response_ok = True
+    while response_ok:
+        print(f"Got Response Code: {response.status_code}... Waiting...")
         sleep(10)
         response = requests.get(URL, headers=headers, timeout=30)
+        if response.ok:
+            response_ok = False
 except Exception as e:
     print(e)
 
