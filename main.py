@@ -13,6 +13,11 @@ URL = "https://api.ransomware.live/v2/recentvictims"
 DEFAULT_EMAIL = os.getenv('DAILY_DEFAULT_EMAIL')
 EMAIL_USERNAME = os.getenv('EMAIL_USERNAME')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
+BCC_LIST = os.environ.get('BCC_LIST', [])
+if BCC_LIST:
+    BCC_LIST = BCC_LIST.split(';')
+if isinstance(BCC_LIST, str):
+    BCC_LIST = []
 
 # Make the GET request
 headers = {"Accept": "application/json"}
@@ -131,7 +136,7 @@ if response.status_code == 200:
         EMAIL_USERNAME,
         [DEFAULT_EMAIL], 
         [],
-        [],
+        BCC_LIST,
         inline_files=None,
         attachments=None
     )
