@@ -18,6 +18,7 @@ EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 headers = {"Accept": "application/json"}
 
 try:
+    response_ok = False
     response = requests.get(URL, headers=headers, timeout=30)
     if not response.ok:
         response_ok = True
@@ -76,23 +77,33 @@ if response.status_code == 200:
     ]
 
     # Formating descriptions and escaping URLs
-    result = [
-        {
-            "victim": pattern.sub(escape_domain, item.get("victim")),
+    email_results = []
+    for item in result:
+        victim_name = ""
+        if item.get("victim"):
+            victim_name = pattern.sub(escape_domain, item.get("victim"))
+        screenshot_url = ""
+        if item.get("screenshot"):
+            screenshot_url = item.get("screenshot")
+        description = ""
+        if item.get("description"):
+            description = pattern.sub(escape_domain, item.get("description").replace("\n","<br>"))
+        claim_url = ""
+        if item.get("claim_url"):
+            claim_url = pattern.sub(escape_domain, item.get("claim_url"))
+        email_results.append({
+            "victim": victim_name,
             # "discovered": item.get("discovered"),
-            "screenshot": item.get("screenshot"),
-            "description": pattern.sub(escape_domain, item.get("description").replace("\n","<br>")),
-            "claim_url": pattern.sub(escape_domain, item.get("claim_url")),
-            
-        }
-        for item in result
-    ]
+            "screenshot": screenshot_url,
+            "description": description,
+            "claim_url": claim_url,
+        })
     
     # Email results
     mail_obj = MailAPI(EMAIL_USERNAME, EMAIL_PASSWORD)
     # html_body build as we loop
     html_body_list = []
-    for r in result:
+    for r in email_results:
         results_df = pd.DataFrame.from_dict([r])
         # Convert screenshot URLs to img HTML tags
         if not results_df.empty:
