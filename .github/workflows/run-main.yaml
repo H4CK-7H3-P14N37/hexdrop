@@ -43,3 +43,17 @@ jobs:
 
       - name: Done
         run: echo "Cursecatcher script ran successfully at $(date)"
+      
+      - name: Commit and push updated report data
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/*.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-update report data"
+            git push -u origin main
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

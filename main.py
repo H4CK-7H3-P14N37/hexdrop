@@ -5,7 +5,6 @@ import datetime
 import requests
 import pandas as pd
 from time import sleep
-from django.utils.html import escape
 from api_classes.mail_api import MailAPI
 
 # Define global vars
@@ -18,6 +17,7 @@ if BCC_LIST:
     BCC_LIST = BCC_LIST.split(';')
 if isinstance(BCC_LIST, str):
     BCC_LIST = []
+REPORT_DIR = os.path.abspath("./reports")
 
 # Make the GET request
 headers = {"Accept": "application/json"}
@@ -129,7 +129,12 @@ if response.status_code == 200:
         )
         html_body_list.append(results_html)
     email_body = "<br><br>".join(html_body_list)
-    email_subject = f"Hexdrop: {datetime.datetime.now().strftime('%Y-%m-%d')}"
+    dt_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    if not os.path.exists(REPORT_DIR):
+        os.mkdir(REPORT_DIR)
+    with open(os.path.join(REPORT_DIR,f"{dt_str}.html"), "w") as f:
+        f.write(email_body)
+    email_subject = f"Hexdrop: {dt_str}"
     send_status = mail_obj.send_mail(
         email_subject,
         email_body,
