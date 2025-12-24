@@ -1,0 +1,56 @@
+stages:
+  - run
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_DEPTH: "0"
+
+run_hexdrop:
+  stage: run
+  image: ubuntu:latest
+
+  # Schedule + manual (web UI) only; do not run on every push
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+    - when: never
+
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends
+        gcc python3-venv python3-dev git tzdata ca-certificates
+    - python3 -m venv env
+    - . env/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+
+  script:
+    # GitLab CI/CD variables are already in the environment; export is optional but explicit.
+    - export DAILY_DEFAULT_EMAIL="${DAILY_DEFAULT_EMAIL}"
+    - export EMAIL_USERNAME="${EMAIL_USERNAME}"
+    - export EMAIL_PASSWORD="${EMAIL_PASSWORD}"
+    - export BCC_LIST="${BCC_LIST}"
+
+    - . env/bin/activate
+    - python3 main.py
+
+    # Commit + push updated report data
+    - git config user.name "ltdenard"
+    - git config user.email "ltdenard@gmail.com"
+    - git add reports/*.md || true
+    - |
+      if git diff --cached --quiet; then
+        echo "No changes to commit"
+        echo "HexDrop ran successfully at $(date)"
+        exit 0
+      fi
+    - git commit -m "Auto-update report data"
+
+    # Push back to main using a token (recommended for CI)
+    # Set CI/CD variables: GITLAB_PUSH_TOKEN (masked) and optionally GITLAB_PUSH_USER (default oauth2)
+    - git remote set-url origin "https://${GITLAB_PUSH_USER:-oauth2}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git push origin HEAD:main
+
+    - echo "HexDrop ran successfully at $(date)"
