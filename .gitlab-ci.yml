@@ -11,7 +11,6 @@ run_hexdrop:
 
   # Schedule + manual (web UI) only; do not run on every push
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$CI_PIPELINE_SOURCE == "web"'
 
