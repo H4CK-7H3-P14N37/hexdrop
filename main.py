@@ -21,7 +21,7 @@ REPORT_DIR = os.path.abspath("./reports")
 
 # Make the GET request
 headers = {"Accept": "application/json"}
-
+response_data = {}
 try:
     response_ok = False
     response = requests.get(URL, headers=headers, timeout=30)
@@ -32,6 +32,7 @@ try:
         sleep(10)
         response = requests.get(URL, headers=headers, timeout=30)
         if response.ok:
+            response_data = response.json()
             response_ok = False
 except Exception as e:
     print(e)
@@ -57,9 +58,8 @@ pattern = re.compile(
 )
 
 # Check if the request was successful
-if response.status_code == 200:
-    data = response.json()  # Parse JSON response
-    
+if response_data:
+    data = response_data  # Parse JSON response 
     # Filter data: select only entries where `discovered` starts with today
     filtered_data = []
     for item in data:
