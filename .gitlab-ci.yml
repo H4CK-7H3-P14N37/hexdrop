@@ -35,6 +35,7 @@ run_hexdrop:
     # Commit + push updated report data
     - git config user.name "ltdenard"
     - git config user.email "ltdenard@gmail.com"
+    - git diff
     - git add reports/*.md || true
     - |
       if git diff --cached --quiet; then
