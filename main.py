@@ -25,6 +25,7 @@ response_data = {}
 try:
     response_ok = False
     response = requests.get(URL, headers=headers, timeout=30)
+    response_data = response.json()
     if not response.ok:
         response_ok = True
     while response_ok:
