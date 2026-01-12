@@ -8,7 +8,7 @@ from time import sleep
 from api_classes.mail_api import MailAPI
 
 # Define global vars
-URL = "https://api.ransomware.live/v2/recentvictims"
+URL = "https://api-pro.ransomware.live/victims/recent?order=discovered"
 DEFAULT_EMAIL = os.getenv('DAILY_DEFAULT_EMAIL')
 EMAIL_USERNAME = os.getenv('EMAIL_USERNAME')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
@@ -20,23 +20,31 @@ if isinstance(BCC_LIST, str):
 REPORT_DIR = os.path.abspath("./reports")
 
 # Make the GET request
-headers = {"Accept": "application/json"}
-response_data = {}
-try:
-    response_ok = False
-    response = requests.get(URL, headers=headers, timeout=30)
-    response_data = response.json()
-    if not response.ok:
-        response_ok = True
-    while response_ok:
-        print(f"Got Response Code: {response.status_code}... Waiting...")
-        sleep(10)
+def get_data():
+    headers = {
+        "Accept": "application/json",
+        "X-API-KEY": os.getenv('API_KEY')
+    }
+    response_data = {}
+    try:
+        response_ok = False
         response = requests.get(URL, headers=headers, timeout=30)
-        if response.ok:
-            response_data = response.json()
-            response_ok = False
-except Exception as e:
-    print(e)
+        response_data = response.json()
+        if not response.ok:
+            response_ok = True
+        while response_ok:
+            print(f"Got Response Code: {response.status_code}... Waiting...")
+            sleep(10)
+            response = requests.get(URL, headers=headers, timeout=30)
+            if response.ok:
+                response_data = response.json()
+                response_ok = False
+        return response_data
+    except Exception as e:
+        print(e)
+        get_data()
+
+response_data = get_data().get('victims', {})
 
 # Todays date to filter
 today_minus_n = datetime.datetime.now()-datetime.timedelta(days=1)
@@ -77,7 +85,7 @@ try:
                 # "discovered": item.get("discovered"),
                 "screenshot": item.get("screenshot"),
                 "description": item.get("description"),
-                "claim_url": item.get("claim_url"),
+                "claim_url": item.get("post_url"),
                 
             }
             for item in filtered_data
