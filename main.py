@@ -41,6 +41,8 @@ def get_data():
         print(e)
         get_data()
 
+response_data = get_data()
+
 # Todays date to filter
 today_minus_n = datetime.datetime.now()-datetime.timedelta(days=1)
 
