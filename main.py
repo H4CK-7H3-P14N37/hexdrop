@@ -20,23 +20,26 @@ if isinstance(BCC_LIST, str):
 REPORT_DIR = os.path.abspath("./reports")
 
 # Make the GET request
-headers = {"Accept": "application/json"}
-response_data = {}
-try:
-    response_ok = False
-    response = requests.get(URL, headers=headers, timeout=30)
-    response_data = response.json()
-    if not response.ok:
-        response_ok = True
-    while response_ok:
-        print(f"Got Response Code: {response.status_code}... Waiting...")
-        sleep(10)
+def get_data():
+    headers = {"Accept": "application/json"}
+    response_data = {}
+    try:
+        response_ok = False
         response = requests.get(URL, headers=headers, timeout=30)
-        if response.ok:
-            response_data = response.json()
-            response_ok = False
-except Exception as e:
-    print(e)
+        response_data = response.json()
+        if not response.ok:
+            response_ok = True
+        while response_ok:
+            print(f"Got Response Code: {response.status_code}... Waiting...")
+            sleep(10)
+            response = requests.get(URL, headers=headers, timeout=30)
+            if response.ok:
+                response_data = response.json()
+                response_ok = False
+        return response_data
+    except Exception as e:
+        print(e)
+        get_data()
 
 # Todays date to filter
 today_minus_n = datetime.datetime.now()-datetime.timedelta(days=1)
