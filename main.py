@@ -23,7 +23,7 @@ REPORT_DIR = os.path.abspath("./reports")
 def get_data():
     headers = {
         "Accept": "application/json",
-        "X-API-KEY": "febe81f9-83a6-4e4d-99a0-dc572ecaf153"
+        "X-API-KEY": os.getenv('API_KEY')
     }
     response_data = {}
     try:
