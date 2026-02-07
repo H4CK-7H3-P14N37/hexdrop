@@ -44,7 +44,7 @@ def get_data():
         print(e)
         get_data()
 
-response_data = get_data()
+response_data = get_data().get('victims', {})
 
 # Todays date to filter
 today_minus_n = datetime.datetime.now()-datetime.timedelta(days=1)
@@ -85,7 +85,7 @@ try:
                 # "discovered": item.get("discovered"),
                 "screenshot": item.get("screenshot"),
                 "description": item.get("description"),
-                "claim_url": item.get("claim_url"),
+                "claim_url": item.get("post_url"),
                 
             }
             for item in filtered_data
