@@ -8,7 +8,7 @@ from time import sleep
 from api_classes.mail_api import MailAPI
 
 # Define global vars
-URL = "https://api.ransomware.live/v2/recentvictims"
+URL = "https://api-pro.ransomware.live/victims/recent?order=discovered"
 DEFAULT_EMAIL = os.getenv('DAILY_DEFAULT_EMAIL')
 EMAIL_USERNAME = os.getenv('EMAIL_USERNAME')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
@@ -21,7 +21,10 @@ REPORT_DIR = os.path.abspath("./reports")
 
 # Make the GET request
 def get_data():
-    headers = {"Accept": "application/json"}
+    headers = {
+        "Accept": "application/json"
+        "X-API-KEY": "febe81f9-83a6-4e4d-99a0-dc572ecaf153"
+    }
     response_data = {}
     try:
         response_ok = False
