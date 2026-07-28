@@ -75,7 +75,7 @@ try:
         for item in data:
             discovered_date = item.get("discovered", "")
             if discovered_date:
-                if datetime.datetime.strptime(discovered_date, "%Y-%m-%d %H:%M:%S.%f") >= today_minus_n:
+                if datetime.datetime.fromisoformat(discovered_date).replace(tzinfo=None) >= today_minus_n:
                     filtered_data.append(item)
         
         # Extract only the required fields
