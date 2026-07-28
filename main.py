@@ -145,24 +145,47 @@ try:
             subtitle=f"Ransomware victims discovered {dt_str}",
             palette=HEXDROP_PALETTE,
         )
+        markdown_sections = []
         for r in email_results:
             victim_name = r.get("victim") or "Unknown victim"
             screenshot_html = f'<img src="{r["screenshot"]}" width="200">' if r.get("screenshot") else "No screenshot available"
+            description = r.get("description", "No Description")
+            claim_url = r.get("claim_url", "No URL")
             report.add_table(
                 {
                     "Victim": {"Details": victim_name},
                     "Screenshot": {"Details": screenshot_html},
-                    "Description": {"Details": r.get("description", "No Description")},
-                    "Claim URL": {"Details": r.get("claim_url", "No URL")},
+                    "Description": {"Details": description},
+                    "Claim URL": {"Details": claim_url},
                 },
                 heading=victim_name,
                 index_label="Field",
             )
+            screenshot_md = f'![screenshot]({r["screenshot"]})' if r.get("screenshot") else "No screenshot available"
+            pipe_escaped = {
+                "victim": victim_name.replace("|", "\\|"),
+                "screenshot": screenshot_md.replace("|", "\\|"),
+                "description": description.replace("|", "\\|"),
+                "claim_url": claim_url.replace("|", "\\|"),
+            }
+            markdown_sections.append(
+                f"## {victim_name}\n\n"
+                f"| Field | Details |\n"
+                f"| --- | --- |\n"
+                f"| Victim | {pipe_escaped['victim']} |\n"
+                f"| Screenshot | {pipe_escaped['screenshot']} |\n"
+                f"| Description | {pipe_escaped['description']} |\n"
+                f"| Claim URL | {pipe_escaped['claim_url']} |\n"
+            )
         email_body = report.build_html(renderer=TemplateRenderer(template_dir=TEMPLATE_DIR))
+        markdown_body = (
+            f"# Hexdrop\n\n**Ransomware victims discovered {dt_str}**\n\n"
+            + "\n---\n\n".join(markdown_sections)
+        )
         if not os.path.exists(REPORT_DIR):
             os.mkdir(REPORT_DIR)
         with open(os.path.join(REPORT_DIR,f"{dt_str}.md"), "w") as f:
-            f.write(email_body)
+            f.write(markdown_body)
         email_subject = f"Hexdrop: {dt_str}"
         send_status = mail_obj.send_simple(
             email_subject,
