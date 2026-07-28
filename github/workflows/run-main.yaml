@@ -12,10 +12,8 @@ jobs:
       BCC_LIST: ${{ vars.BCC_LIST }}
 
     steps:
-      - name: Checkout repository with submodules
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install system dependencies
         run: |

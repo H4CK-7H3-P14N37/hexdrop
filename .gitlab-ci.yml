@@ -2,7 +2,6 @@ stages:
   - run
 
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
   GIT_DEPTH: "0"
 
 run_hexdrop:
