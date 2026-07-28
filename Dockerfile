@@ -17,8 +17,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Copy your project code
-RUN mkdir /app/api_classes
-COPY api_classes/mail_api.py /app/api_classes/mail_api.py
 COPY main.py /app/
 COPY cron_run.sh /app/
 COPY entrypoint.sh /app/

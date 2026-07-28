@@ -3,9 +3,8 @@ import os
 import re
 import datetime
 import requests
-import pandas as pd
 from time import sleep
-from api_classes.mail_api import MailAPI
+from deadletterbox import Mailer, ReportBuilder
 
 # Define global vars
 URL = "https://api-pro.ransomware.live/victims/recent?order=discovered"
@@ -115,45 +114,40 @@ try:
             })
         
         # Email results
-        mail_obj = MailAPI(EMAIL_USERNAME, EMAIL_PASSWORD)
-        # html_body build as we loop
-        html_body_list = []
-        for r in email_results:
-            results_df = pd.DataFrame.from_dict([r])
-            # Convert screenshot URLs to img HTML tags
-            if not results_df.empty:
-                results_df['screenshot'] = results_df['screenshot'].apply(
-                    lambda x: f'<img src="{x}" width="200">' if pd.notna(x) else ''
-                )
-            # Transpose DataFrame to display columns vertically
-            transposed_df = results_df.T
-            # Reset index to make first column a header (removes '0' row)
-            transposed_df.columns = ['Details']  # Set a meaningful column name
-            results_html = transposed_df.to_html(index=False, classes='stocktable', table_id='table1', escape=False)
-            results_html = results_html.replace(
-                'class="dataframe ',
-                'class="'
-            ).replace(
-                '<tr style="text-align: right;">',
-                '<tr style="text-align: left;">'
-            )
-            html_body_list.append(results_html)
-        email_body = "<br><br>".join(html_body_list)
+        mail_obj = Mailer(EMAIL_USERNAME, EMAIL_PASSWORD)
         dt_str = datetime.datetime.now().strftime('%Y-%m-%d')
+        report = ReportBuilder(
+            title="Hexdrop",
+            subtitle=f"Ransomware victims discovered {dt_str}",
+        )
+        for r in email_results:
+            victim_name = r.get("victim") or "Unknown victim"
+            screenshot_html = f'<img src="{r["screenshot"]}" width="200">' if r.get("screenshot") else "No screenshot available"
+            report.add_table(
+                {
+                    "Victim": {"Details": victim_name},
+                    "Screenshot": {"Details": screenshot_html},
+                    "Description": {"Details": r.get("description", "No Description")},
+                    "Claim URL": {"Details": r.get("claim_url", "No URL")},
+                },
+                heading=victim_name,
+                index_label="Field",
+            )
+        email_body = report.build_html()
         if not os.path.exists(REPORT_DIR):
             os.mkdir(REPORT_DIR)
         with open(os.path.join(REPORT_DIR,f"{dt_str}.md"), "w") as f:
             f.write(email_body)
         email_subject = f"Hexdrop: {dt_str}"
-        send_status = mail_obj.send_mail(
+        send_status = mail_obj.send_simple(
             email_subject,
-            email_body,
             EMAIL_USERNAME,
-            [DEFAULT_EMAIL], 
-            [],
-            BCC_LIST,
-            inline_files=None,
-            attachments=None
+            to=[DEFAULT_EMAIL],
+            cc=[],
+            bcc=BCC_LIST,
+            html=email_body,
+            attachments=None,
+            inline_images=None
         )
 except Exception as e:
     print(f"Error: {e}")
