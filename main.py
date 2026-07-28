@@ -4,7 +4,31 @@ import re
 import datetime
 import requests
 from time import sleep
-from deadletterbox import Mailer, ReportBuilder
+from deadletterbox import Mailer, ReportBuilder, Palette, TemplateRenderer
+
+TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+
+# Red, hacker/terminal-themed palette with hard borders separating each
+# victim's entry.
+HEXDROP_PALETTE = Palette("hexdrop", {
+    "bg": "#0a0000",
+    "surface": "#140303",
+    "surface-alt": "#1f0606",
+    "header-start": "#330000",
+    "header-end": "#7a0000",
+    "accent": "#ff1a1a",
+    "accent-end": "#b30000",
+    "accent-contrast": "#0a0000",
+    "accent-secondary": "#ff5f5f",
+    "field-color": "#ff3d3d",
+    "row-stripe": "#170505",
+    "card-border": "#ff1a1a",
+    "text": "#e0a0a0",
+    "text-strong": "#ff4d4d",
+    "text-muted": "#7a4a4a",
+    "border": "#4d0000",
+    "row-hover": "#2a0808",
+})
 
 # Define global vars
 URL = "https://api-pro.ransomware.live/victims/recent?order=discovered"
@@ -119,6 +143,7 @@ try:
         report = ReportBuilder(
             title="Hexdrop",
             subtitle=f"Ransomware victims discovered {dt_str}",
+            palette=HEXDROP_PALETTE,
         )
         for r in email_results:
             victim_name = r.get("victim") or "Unknown victim"
@@ -133,7 +158,7 @@ try:
                 heading=victim_name,
                 index_label="Field",
             )
-        email_body = report.build_html()
+        email_body = report.build_html(renderer=TemplateRenderer(template_dir=TEMPLATE_DIR))
         if not os.path.exists(REPORT_DIR):
             os.mkdir(REPORT_DIR)
         with open(os.path.join(REPORT_DIR,f"{dt_str}.md"), "w") as f:
