@@ -52,3 +52,5 @@ run_hexdrop:
     - echo "HexDrop ran successfully at $(date)"
   
   resource_group: run-hexdrop
+  retry:
+    max: 2
