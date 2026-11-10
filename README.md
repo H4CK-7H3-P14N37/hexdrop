@@ -26,4 +26,6 @@ git clone --recursive https://github.com/H4CK-7H3-P14N37/hexdrop.git
 DAILY_DEFAULT_EMAIL=
 EMAIL_USERNAME=
 EMAIL_PASSWORD=
+# Set to true to email the report; defaults to false (report is only written to ./reports)
+SEND_EMAIL=false
 ```

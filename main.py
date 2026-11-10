@@ -41,6 +41,9 @@ if BCC_LIST:
 if isinstance(BCC_LIST, str):
     BCC_LIST = []
 REPORT_DIR = os.path.abspath("./reports")
+# Email switch: set SEND_EMAIL=true (or 1/yes/on) to email the report.
+# Defaults to off; the markdown report is always written to REPORT_DIR.
+SEND_EMAIL = os.getenv('SEND_EMAIL', 'false').strip().lower() in ('1', 'true', 'yes', 'on')
 
 # Make the GET request
 def get_data():
@@ -137,8 +140,7 @@ try:
                 "claim_url": claim_url,
             })
         
-        # Email results
-        mail_obj = Mailer(EMAIL_USERNAME, EMAIL_PASSWORD)
+        # Build report
         dt_str = datetime.datetime.now().strftime('%Y-%m-%d')
         report = ReportBuilder(
             title="Hexdrop",
@@ -177,7 +179,6 @@ try:
                 f"| Description | {pipe_escaped['description']} |\n"
                 f"| Claim URL | {pipe_escaped['claim_url']} |\n"
             )
-        email_body = report.build_html(renderer=TemplateRenderer(template_dir=TEMPLATE_DIR))
         markdown_body = (
             f"# Hexdrop\n\n**Ransomware victims discovered {dt_str}**\n\n"
             + "\n---\n\n".join(markdown_sections)
@@ -186,16 +187,22 @@ try:
             os.mkdir(REPORT_DIR)
         with open(os.path.join(REPORT_DIR,f"{dt_str}.md"), "w") as f:
             f.write(markdown_body)
-        email_subject = f"Hexdrop: {dt_str}"
-        send_status = mail_obj.send_simple(
-            email_subject,
-            EMAIL_USERNAME,
-            to=[DEFAULT_EMAIL],
-            cc=[],
-            bcc=BCC_LIST,
-            html=email_body,
-            attachments=None,
-            inline_images=None
-        )
+        # Email results (only when enabled)
+        if SEND_EMAIL:
+            email_body = report.build_html(renderer=TemplateRenderer(template_dir=TEMPLATE_DIR))
+            mail_obj = Mailer(EMAIL_USERNAME, EMAIL_PASSWORD)
+            email_subject = f"Hexdrop: {dt_str}"
+            send_status = mail_obj.send_simple(
+                email_subject,
+                EMAIL_USERNAME,
+                to=[DEFAULT_EMAIL],
+                cc=[],
+                bcc=BCC_LIST,
+                html=email_body,
+                attachments=None,
+                inline_images=None
+            )
+        else:
+            print("SEND_EMAIL is disabled; skipping email (report written to disk).")
 except Exception as e:
     print(f"Error: {e}")

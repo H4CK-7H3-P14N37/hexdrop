@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BCC_LIST: ${{ vars.BCC_LIST }}
+      # Email switch: set the SEND_EMAIL repo variable to "true" to email the report
+      SEND_EMAIL: ${{ vars.SEND_EMAIL || 'false' }}
 
     steps:
       - name: Checkout repository

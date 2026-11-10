@@ -28,6 +28,8 @@ run_hexdrop:
     - export EMAIL_USERNAME="${EMAIL_USERNAME}"
     - export EMAIL_PASSWORD="${EMAIL_PASSWORD}"
     - export BCC_LIST="${BCC_LIST}"
+    # Email switch: set the SEND_EMAIL CI/CD variable to "true" to email the report
+    - export SEND_EMAIL="${SEND_EMAIL:-false}"
     - source env/bin/activate
     - python3 main.py
 
