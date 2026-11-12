@@ -6,7 +6,7 @@ variables:
 
 run_hexdrop:
   stage: run
-  image: ubuntu:latest
+  image: ubuntu:26.04
 
   # Schedule + manual (web UI) only; do not run on every push
   rules:
